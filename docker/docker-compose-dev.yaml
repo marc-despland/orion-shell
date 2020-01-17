@@ -1,0 +1,37 @@
+version: "3.3"
+services:
+  oriondb:
+    image: mongo
+    command: --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo 
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/orion.db.root.password 
+      - MONGO_INITDB_DATABASE=admin
+      - ORIONDB_PASSWORD_FILE=/run/secrets/orion.db.password
+    volumes:
+      - orion-db:/data/db
+      - ./oriondb:/docker-entrypoint-initdb.d
+    secrets:
+      - orion.db.root.password
+      - orion.db.password
+  orion:
+    build: ./orion
+    image: my-orion
+    environment:
+      - DB_HOST=oriondb 
+      - DB=orion 
+      - DB_USER=orion 
+      - DB_PASSWORD_FILE=/run/secrets/orion.db.password
+    ports:
+      - "1026:1026"
+    secrets:
+      - orion.db.password
+secrets:
+  orionrepeater.auth.token:
+    file: ./secrets/orionrepeater.auth.token
+  orion.db.root.password:
+    file: ./secrets/orion.db.root.password
+  orion.db.password:
+    file: ./secrets/orion.db.password
+volumes:
+  orion-db:

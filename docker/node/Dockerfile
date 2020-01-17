@@ -1,0 +1,4 @@
+FROM node
+EXPOSE 9229
+WORKDIR /app
+ENTRYPOINT ["/bin/bash"]

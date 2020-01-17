@@ -1,0 +1,28 @@
+{
+    "local": {
+        "name": "local",
+        "orion": "http://172.17.0.1:1026",
+        "service": "",
+        "servicePath": "",
+        "useAuth": false,
+        "search": {
+            "All": {
+                "name": "All",
+                "options": "count",
+                "attrs": "dateCreated,dateModified"
+            },
+            "No AirQuality": {
+                "name": "No AirQuality",
+                "options": "count",
+                "q": "!airquality",
+                "attrs": "dateCreated,dateModified"
+            },
+            "AirQuality": {
+                "name": "AirQuality",
+                "options": "count",
+                "q": "airquality",
+                "attrs": "dateCreated,dateModified"
+            }
+        }
+    }
+}

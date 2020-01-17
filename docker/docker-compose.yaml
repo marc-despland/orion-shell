@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  orionrepeater:
+    image: marcdespland/orionrepeater:1.0.0
+    environment:
+      - LISTEN_PORT=8080
+      - LISTEN_IP=0.0.0.0 
+      - TARGET_ORION_URL=http://127.0.0.1:1026
+      - TARGET_SERVICE=default
+      - TARGET_SERVICE_PATH=/
+      - TARGET_AUTH_TOKEN_FILE=/run/secrets/orionrepeater.auth.token
+    secrets:
+      - orionrepeater.auth.token
+secrets:
+    orionrepeater.auth.token:
+      file: ./secrets/orionrepeater.auth.token
