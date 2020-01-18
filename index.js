@@ -13,7 +13,7 @@ async function orionShell() {
     var go = true;
     while (go) {
         var choices = [];
-        if (engine.configured()) {
+        if (!engine.configured()) {
             choices.push("Configure");
         } else {
             engine.printConfig();
@@ -22,13 +22,18 @@ async function orionShell() {
                     choices.push("Authenticate");
                 } else {
                     choices.push("Change user");
+                    choices.push("Orion version");
+                    choices.push("Entities");
+                    choices.push("Change configuration");
                 }
+            } else {
+                choices.push("Orion version");
+                choices.push("Entities");
+                choices.push("Change configuration");
             }
-            choices.push("Orion version");
-            choices.push("Entities");
-            choices.push("Change configuration");
-            choices.push("Parameters");
+
         }
+        choices.push("Parameters");
         choices.push("Exit");
 
         const choose = await inquirer.prompt({
@@ -78,8 +83,8 @@ async function parameters() {
         }
     ]
     var choose = await inquirer.prompt(questions)
-    engine.default_limit=choose.default_limit;
-    engine.show_curl=choose.show_curl==="yes";
+    engine.default_limit = choose.default_limit;
+    engine.show_curl = choose.show_curl === "yes";
 }
 
 
@@ -195,19 +200,19 @@ async function select_entity() {
     if (response.status === 200) {
         console.log(JSON.stringify(response.data, null, 4));
         console.log("")
-        var back=false;
-        var entityid=choose.id;
+        var back = false;
+        var entityid = choose.id;
         while (!back) {
             var menu = [
                 {
                     type: "list",
                     name: "action",
-                    message: "Entity Id : "+entityid+" : ",
-                    choices: ["Retrieve entity","Retrieve attributes", "Update or Append entity attribues","Update existing entity attributes","Replace all entities attributes","Remove entity", "Back"]
+                    message: "Entity Id : " + entityid + " : ",
+                    choices: ["Retrieve entity", "Retrieve attributes", "Update or Append entity attribues", "Update existing entity attributes", "Replace all entities attributes", "Remove entity", "Back"]
                 }
             ]
             choose = await inquirer.prompt(menu)
-            switch(choose.action) {
+            switch (choose.action) {
                 case "Retrieve entity":
                     await retrieve_entity(entityid);
                     break;
@@ -227,17 +232,17 @@ async function select_entity() {
                     await delete_entity(entityid);
                     break;
                 case "Back":
-                    back=true;
+                    back = true;
                     break;
             }
         }
 
     } else {
-        console.log("Unknown entity status: "+response.status);
+        console.log("Unknown entity status: " + response.status);
     }
 }
 
-async function replace_all_entity_attributes(entityid){
+async function replace_all_entity_attributes(entityid) {
     var questions = [
         {
             type: 'editor',
@@ -261,7 +266,7 @@ async function replace_all_entity_attributes(entityid){
     var headers = {
         "Content-Type": "application/json"
     }
-    var response = await engine.sendOrionRequest("PUT", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+    var response = await engine.sendOrionRequest("PUT", "/v2/entities/" + entityid + "/attrs" + options, choose.attributes, headers);
 
     if (response.status === 204) {
         console.log("Entity created");
@@ -295,7 +300,7 @@ async function update_append_entity_attributes(entityid) {
     var headers = {
         "Content-Type": "application/json"
     }
-    var response = await engine.sendOrionRequest("POST", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+    var response = await engine.sendOrionRequest("POST", "/v2/entities/" + entityid + "/attrs" + options, choose.attributes, headers);
 
     if (response.status === 204) {
         console.log("Entity created");
@@ -328,7 +333,7 @@ async function update_existing_entity_attributes(entityid) {
     var headers = {
         "Content-Type": "application/json"
     }
-    var response = await engine.sendOrionRequest("PATCH", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+    var response = await engine.sendOrionRequest("PATCH", "/v2/entities/" + entityid + "/attrs" + options, choose.attributes, headers);
 
     if (response.status === 204) {
         console.log("Entity patched");
@@ -352,26 +357,26 @@ async function retrieve_attributes(entityid) {
             choices: ["keyValues", "values", "unique"]
         }
     ]
-    var query="";
+    var query = "";
     var choose = await inquirer.prompt(questions)
-    if (choose.attrs!=="") query+="?attrs="+choose.attrs;
-    if (choose.options.length>0) {
-        if (query==="") {
-            query="?options=";
+    if (choose.attrs !== "") query += "?attrs=" + choose.attrs;
+    if (choose.options.length > 0) {
+        if (query === "") {
+            query = "?options=";
         } else {
-            query+="&options=";
+            query += "&options=";
         }
-        for (var i=0;i<choose.options.length; i++) {
-            if (i>0) query+=",";
-            query+=choose.options[i];
+        for (var i = 0; i < choose.options.length; i++) {
+            if (i > 0) query += ",";
+            query += choose.options[i];
         }
     }
-    var response = await engine.sendOrionRequest("GET", "/v2/entities/" + entityid+"/attrs"+query, null, {});
+    var response = await engine.sendOrionRequest("GET", "/v2/entities/" + entityid + "/attrs" + query, null, {});
     if (response.status === 200) {
         console.log(JSON.stringify(response.data, null, 4));
         console.log("")
     } else {
-        console.log("Unknown entity status: "+response.status);
+        console.log("Unknown entity status: " + response.status);
     }
 }
 
@@ -390,26 +395,26 @@ async function retrieve_entity(entityid) {
             choices: ["keyValues", "values", "unique"]
         }
     ]
-    var query="";
+    var query = "";
     var choose = await inquirer.prompt(questions)
-    if (choose.attrs!=="") query+="?attrs="+choose.attrs;
-    if (choose.options.length>0) {
-        if (query==="") {
-            query="?options=";
+    if (choose.attrs !== "") query += "?attrs=" + choose.attrs;
+    if (choose.options.length > 0) {
+        if (query === "") {
+            query = "?options=";
         } else {
-            query+="&options=";
+            query += "&options=";
         }
-        for (var i=0;i<choose.options.length; i++) {
-            if (i>0) query+=",";
-            query+=choose.options[i];
+        for (var i = 0; i < choose.options.length; i++) {
+            if (i > 0) query += ",";
+            query += choose.options[i];
         }
     }
-    var response = await engine.sendOrionRequest("GET", "/v2/entities/" + entityid+query, null, {});
+    var response = await engine.sendOrionRequest("GET", "/v2/entities/" + entityid + query, null, {});
     if (response.status === 200) {
         console.log(JSON.stringify(response.data, null, 4));
         console.log("")
     } else {
-        console.log("Unknown entity status: "+response.status);
+        console.log("Unknown entity status: " + response.status);
     }
 }
 
@@ -430,7 +435,7 @@ async function delete_entity(entityid) {
             console.log("Entity deleted");
             console.log("")
         } else {
-            console.log("Unknown entity " +response.status);
+            console.log("Unknown entity " + response.status);
         }
     }
 }
@@ -442,7 +447,7 @@ async function delete_entity(entityid) {
 async function search_entities() {
     var back = false;
     while (!back) {
-        var keys=engine.getSearchQueries();
+        var keys = engine.getSearchQueries();
         keys.push("New search");
         keys.push("Back");
         var questions = [
@@ -638,7 +643,7 @@ async function create_configuration() {
         servicePath: choice.servicepath,
         useAuth: choice.useauth === "yes"
     };
-    if (newconfigs[config].useAuth) {
+    if (newconfig.useAuth) {
         var auth = [
             {
                 type: 'input',
@@ -655,7 +660,7 @@ async function create_configuration() {
             {
                 type: 'input',
                 name: 'idserver',
-                message: 'IdM Server URLt:',
+                message: 'IdM Server URL:',
                 default: engine.config().idServer
             },
             {
@@ -667,11 +672,11 @@ async function create_configuration() {
             }
         ]
         choice = await inquirer.prompt(auth);
-        newconfigs[config].clientId = choice.clientid;
-        newconfigs[config].clientSecret = choice.clientsecret;
-        newconfigs[config].idServer = choice.idServer;
-        newconfigs[config].permanent = choice.permanent === "yes";
-        newconfigs[config].user = ""
+        newconfig.clientId = choice.clientid;
+        newconfig.clientSecret = choice.clientsecret;
+        newconfig.idServer = choice.idserver;
+        newconfig.permanent = choice.permanent === "yes";
+        newconfig.user = ""
     }
     return newconfig;
 }
@@ -687,51 +692,19 @@ async function getVersion() {
 
 
 async function authenticate() {
-/*    var questions2 = [
-        {
-            type: 'input',
-            name: 'login',
-            message: 'Login :',
-            default: user.login
-        },
-        {
-            type: 'password',
-            name: 'password',
-            message: 'Password :'
-        },
-        {
-            type: 'list',
-            name: 'permanent',
-            message: 'Permanent token:',
-            choices: ["permanent", "normal"],
-            default: user.permanent
-        }
-    ]
-    var getUser = await inquirer.prompt(questions2);
-    user.login = getUser.login;
-    user.permanent = getUser.permanent;
-    let data = configs[config].clientId + ":" + configs[config].clientSecret;
-    let buff = Buffer.from(data);
-    let authorization = buff.toString('base64');
-
-    var request = {
-        method: "POST",
-        url: configs[config].isServer + "/oauth2/token",
-        data: user.permanent ? "grant_type=password&username=" + encodeURI(user.login) + "&password=" + encodeURI(getUser.password) + "&scope=permanent" : "grant_type=password&username=" + encodeURI(user.login) + "&password=" + encodeURI(getUser.password),
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + authorization
-        }
-    };
-    try {
-        var response = await axios.request(request);
-    } catch (error) {
-        console.log(JSON.stringify(request, null, 4));
-    }
-
-    try {
-        fs.writeFileSync("user.json", JSON.stringify(user, null, 4));
-    } catch (error) {
-        console.log("Can't save option in configs[config].json")
-    }*/
+        var questions = [
+            {
+                type: 'input',
+                name: 'login',
+                message: 'Login :',
+                default: engine.config().user
+            },
+            {
+                type: 'password',
+                name: 'password',
+                message: 'Password :'
+            }
+        ]
+        var choose = await inquirer.prompt(questions);
+        await engine.requestAuthToken(choose.login, choose.password)
 }

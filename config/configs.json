@@ -24,5 +24,17 @@
                 "attrs": "dateCreated,dateModified"
             }
         }
+    },
+    "with auth": {
+        "name": "with auth",
+        "orion": "http://172.17.0.1:1026",
+        "service": "",
+        "servicePath": "",
+        "useAuth": true,
+        "clientId": "fdfb1749-6285-4eef-8fae-bec44c7d5e0c",
+        "clientSecret": "d89db5a1-35e7-4f4a-94e2-1d26e0bf0182",
+        "permanent": false,
+        "idServer": "http://172.17.0.1:3000",
+        "user": ""
     }
 }

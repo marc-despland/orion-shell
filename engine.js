@@ -19,10 +19,10 @@ module.exports = class Engine {
         }
     }
     connected() {
-        return (this.token==="")
+        return (this.token!=="")
     }
     configured() {
-        return (this.configname==="");
+        return (this.configname!=="");
     }
     config() {
         return this.configs[this.configname];
@@ -50,15 +50,49 @@ module.exports = class Engine {
         if (data !== null) request.data = data;
         if (this.config().service !== "") request.headers["Fiware-Service"] = this.config().service;
         if (this.config().servicePath !== "") request.headers["Fiware-ServicePath"] = this.config().servicePath;
-        if (this.config().useAuth) request.headers["X-Auth-Token"] = token;
+        if (this.config().useAuth) request.headers["X-Auth-Token"] = this.token;
         if (this.show_curl) this.curl(request);
         try {
             return await axios.request(request);
         } catch (error) {
-            return error.response;
+            if (error.hasOwnProperty("response") && (error.response.hasOwnProperty("status"))) {
+                if ((error.response.status===401) || (error.response.status===403)) {
+                    this.token="";
+                }
+                return error.response;
+            } else {
+                var answer={
+                    status: 666
+                }
+                return answer;
+            }
         }
-
     }
+
+    async requestAuthToken(user, password) {
+        this.configs[this.configname].user=user;
+        let data = this.config().clientId + ":" + this.config().clientSecret;
+        let buff = Buffer.from(data);
+        let authorization = buff.toString('base64');
+    
+        var request = {
+            method: "POST",
+            url: this.config().idServer + "/oauth2/token",
+            data: this.config().permanent ? "grant_type=password&username=" + encodeURI(user) + "&password=" + encodeURI(password) + "&scope=permanent" : "grant_type=password&username=" + encodeURI(user) + "&password=" + encodeURI(password),
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": "Basic " + authorization
+            }
+        };
+        if (this.show_curl) this.curl(request);
+        try {
+            var response=await axios.request(request);
+            if (response.hasOwnProperty("data") && response.data.hasOwnProperty("access_token")) this.token=response.data.access_token;
+        } catch(exception) {
+
+        }
+    }
+
 
     curl(request) {
         var cmd="curl -X "+request.method+" ";
@@ -79,9 +113,11 @@ module.exports = class Engine {
         console.log("Fiware Service \t\t: " + this.config().service);
         console.log("Fiware Service Path\t: " + this.config().servicePath);
         if (this.config().useAuth) {
-            console.log("IdM server\t: " + this.config().idServer);
-            console.log("Client Id\t: " + this.config().clientId);
-            console.log("Client Secret\t: " + this.config().clientSecret);
+            console.log("IdM server\t\t: " + this.config().idServer);
+            console.log("Client Id\t\t: " + this.config().clientId);
+            console.log("Client Secret\t\t: " + this.config().clientSecret);
+            console.log("X-Auth-Token\t\t: " + this.token);
+            console.log("User\t\t\t: " + this.config().user);
         }
         console.log("")
     }
