@@ -203,7 +203,7 @@ async function select_entity() {
                     type: "list",
                     name: "action",
                     message: "Entity Id : "+entityid+" : ",
-                    choices: ["Retrieve entity","Retrieve attributes", "Delete", "Back"]
+                    choices: ["Retrieve entity","Retrieve attributes", "Update or Append entity attribues","Update existing entity attributes","Replace all entities attributes","Remove entity", "Back"]
                 }
             ]
             choose = await inquirer.prompt(menu)
@@ -214,7 +214,15 @@ async function select_entity() {
                 case "Retrieve attributes":
                     await retrieve_attributes(entityid);
                     break;
-                case "Delete":
+                case "Update or Append entity attribues":
+                    await update_append_entity_attributes(entityid);
+                    break;
+                case "Update existing entity attributes":
+                    await update_existing_entity_attributes(entityid);
+                    break;
+                case "Replace all entities attributes":
+                    break;
+                case "Remove entity":
                     await delete_entity(entityid);
                     break;
                 case "Back":
@@ -227,6 +235,74 @@ async function select_entity() {
         console.log("Unknown entity status: "+response.status);
     }
 }
+
+async function update_append_entity_attributes(entityid) {
+    var questions = [
+        {
+            type: 'editor',
+            name: 'attributes',
+            message: 'Attributes:'
+        },
+        {
+            type: 'checkbox',
+            name: 'options',
+            message: 'options:',
+            choices: ["append", "keyValues"]
+
+        }
+    ]
+    var choose = await inquirer.prompt(questions)
+    var options = "";
+    if (choose.options.length > 0) {
+        options = "?options=" + choose.options[0];
+        for (var i = 1; i < choose.options.length; i++) options += "," + choose.options[i];
+    }
+    var headers = {
+        "Content-Type": "application/json"
+    }
+    var response = await engine.sendOrionRequest("POST", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+
+    if (response.status === 204) {
+        console.log("Entity created");
+    } else {
+        console.log("Can't create entity " + response.status);
+    }
+}
+
+async function update_existing_entity_attributes(entityid) {
+    var questions = [
+        {
+            type: 'editor',
+            name: 'attributes',
+            message: 'Attributes:'
+        },
+        {
+            type: 'checkbox',
+            name: 'options',
+            message: 'options:',
+            choices: ["keyValues"]
+
+        }
+    ]
+    var choose = await inquirer.prompt(questions)
+    var options = "";
+    if (choose.options.length > 0) {
+        options = "?options=" + choose.options[0];
+        for (var i = 1; i < choose.options.length; i++) options += "," + choose.options[i];
+    }
+    var headers = {
+        "Content-Type": "application/json"
+    }
+    var response = await engine.sendOrionRequest("PATCH", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+
+    if (response.status === 204) {
+        console.log("Entity patched");
+    } else {
+        console.log("Can't patch entity " + response.status);
+    }
+}
+
+
 
 async function retrieve_attributes(entityid) {
     var questions = [
