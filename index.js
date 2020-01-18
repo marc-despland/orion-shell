@@ -221,6 +221,7 @@ async function select_entity() {
                     await update_existing_entity_attributes(entityid);
                     break;
                 case "Replace all entities attributes":
+                    await replace_all_entity_attributes(entityid);
                     break;
                 case "Remove entity":
                     await delete_entity(entityid);
@@ -235,6 +236,40 @@ async function select_entity() {
         console.log("Unknown entity status: "+response.status);
     }
 }
+
+async function replace_all_entity_attributes(entityid){
+    var questions = [
+        {
+            type: 'editor',
+            name: 'attributes',
+            message: 'Attributes:'
+        },
+        {
+            type: 'checkbox',
+            name: 'options',
+            message: 'options:',
+            choices: ["keyValues"]
+
+        }
+    ]
+    var choose = await inquirer.prompt(questions)
+    var options = "";
+    if (choose.options.length > 0) {
+        options = "?options=" + choose.options[0];
+        for (var i = 1; i < choose.options.length; i++) options += "," + choose.options[i];
+    }
+    var headers = {
+        "Content-Type": "application/json"
+    }
+    var response = await engine.sendOrionRequest("PUT", "/v2/entities/" + entityid+"/attrs"+ options, choose.attributes, headers);
+
+    if (response.status === 204) {
+        console.log("Entity created");
+    } else {
+        console.log("Can't create entity " + response.status);
+    }
+}
+
 
 async function update_append_entity_attributes(entityid) {
     var questions = [
