@@ -1,7 +1,0 @@
-{
-    "orion": "http://127.0.0.1",
-    "service": "PIXEL",
-    "servicePath": "/FRBOD",
-    "clientId": "test",
-    "clientSecret": "test"
-}
